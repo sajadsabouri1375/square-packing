@@ -5,7 +5,7 @@
 import unittest
 import numpy as np
 from utils.utils import Utils
-from optimizers import PsoOptimizer
+from discrete_optimizers import DiscretePsoOptimizer
 from square_packing import SquarePacking
 import math
 from matplotlib import pyplot as plt
@@ -70,7 +70,7 @@ def square_packing_function(args):
             squares_properties=chunk_into_n(list(args[solution_index, :]), n_squares)
         )
         
-        obj_f = square_packing_obj.calculate_bounding_area() + 4 * square_packing_obj.calculate_sum_overlapped_area_matrix()
+        obj_f = square_packing_obj.calculate_bounding_area() * (1 + 2 * square_packing_obj.calculate_sum_overlapped_area_matrix())
         
         results.append(obj_f)
 
@@ -82,27 +82,29 @@ class TestOptimizer(unittest.TestCase):
     def setUp(cls):
 
         lower_bounds = np.array([0, 0, -1 * np.pi/2])
-        upper_bounds = np.array([30, 30, np.pi/2])
-        n_squares = 16
+        upper_bounds = np.array([50, 50, np.pi/2])
+        features_steps = np.array([0.001, 0.001, np.pi/8])
+        cls._n_squares = 16
         
-        cls._optimizer = PsoOptimizer(
-            problem_name=f'square_packing_n_{n_squares}',
+        cls._optimizer = DiscretePsoOptimizer(
+            problem_name=f'square_packing_discrete_n_{cls._n_squares}',
             saving_directory=Utils.get_path('outputs/optimization/'),
             store_results=True,
             plot_cost_history=True,
             objective_function=square_packing_function,
-            n_dimensions=3*n_squares,
+            n_dimensions=3*cls._n_squares,
             animate_positions=False,
-            bounds=(np.tile(lower_bounds, n_squares), np.tile(upper_bounds, n_squares)),
-            n_particles=6000,
-            n_iterations=500
+            bounds=(np.tile(lower_bounds, cls._n_squares), np.tile(upper_bounds, cls._n_squares)),
+            n_particles=5000,
+            n_iterations=500,
+            features_steps=np.tile(features_steps, cls._n_squares)
         )
-
-    def test_square_packing(self):
+        
+    def test_square_packing_discrete(self):
         
         least_cost, best_position = self._optimizer.run_optimizer()
         plot_packed_squares(best_position)
-        self.assertLess(least_cost, 10 * 10)
+        self.assertLess(least_cost, self._n_squares * self._n_squares)
         
 if __name__ == '__main__':
     unittest.main()
