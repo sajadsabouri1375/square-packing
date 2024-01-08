@@ -37,9 +37,7 @@ class PsoOptimizer:
         self._bounds = kwargs.get('bounds', (np.zeros(self._n_dimensions), np.ones(self._n_dimensions)))
         self._n_iterations:int = kwargs.get('n_iterations', 100)
         self._objective_function:function = kwargs.get('objective_function')
-        
-        self.define_optimizer()
-        
+                
     def set_objective_function(self, obj_f):
         
         self._objective_function = obj_f
@@ -50,8 +48,7 @@ class PsoOptimizer:
             n_particles=self._n_particles,
             dimensions=self._n_dimensions,
             options=self._options,
-            bounds=self._bounds,
-            
+            bounds=self._bounds
         )
         
     def store_results(self, cost, position):
@@ -101,13 +98,7 @@ class PsoOptimizer:
             raise Exception('2D positions evolution animation is only available for problems with 2 dimensions.')
             exit()
             
-    def run_optimizer(self):
-        
-        least_cost, best_position = self._optimizer.optimize(
-            self._objective_function,
-            iters=self._n_iterations,
-            n_processes=20
-        )
+    def report_results(self, least_cost, best_position):
         
         if self._store_results:
             self.store_results(least_cost, best_position)
@@ -117,6 +108,18 @@ class PsoOptimizer:
             
         if self._animate_positions:
             self.animate()
+            
+    def run_optimizer(self):
+        
+        self.define_optimizer()
+
+        least_cost, best_position = self._optimizer.optimize(
+            self._objective_function,
+            iters=self._n_iterations,
+            n_processes=20
+        )
+        
+        self.report_results(least_cost, best_position)
                 
         return least_cost, best_position
         
