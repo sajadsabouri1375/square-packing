@@ -35,6 +35,7 @@ class OptimizerCore:
         
         self.cost_history = []
         self.pos_history = []
+        self.best_pos_history = []
     
     def custom_round_function(self, value, step):
         
@@ -77,6 +78,7 @@ class OptimizerCore:
             
             self.cost_history.append(self._swarm.best_cost)
             self.pos_history.append(self._swarm.position)
+            self.best_pos_history.append(self._swarm.best_pos)
             
         # Close Pool of Processes
         if self._n_processes is not None:

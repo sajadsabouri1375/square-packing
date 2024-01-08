@@ -73,6 +73,7 @@ class PsoOptimizer:
             os.path.join(self._saving_directory, "cost_history.jpg"),
             dpi=300
         )
+        plt.close('all')
 
     def animate(self):
         
@@ -97,7 +98,7 @@ class PsoOptimizer:
             
             raise Exception('2D positions evolution animation is only available for problems with 2 dimensions.')
             exit()
-            
+     
     def report_results(self, least_cost, best_position):
         
         if self._store_results:
