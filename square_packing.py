@@ -12,7 +12,14 @@ class SquarePacking:
     
     def __init__(self, **kwargs):
         
-        self._squares_properties = kwargs.get('squares_properties')
+        self.set_squares_properties(kwargs.get('squares_properties'))
+        
+        self._bounding_square_area = None
+        self._overlapped_area_matrix = None
+    
+    def set_squares_properties(self, new_squares_properties):
+        
+        self._squares_properties = new_squares_properties
         
         self._squares = [
             Square(
@@ -27,9 +34,6 @@ class SquarePacking:
             Polygon(square.get_coordinates_tuple())
             for square in self._squares
         ]
-        
-        self._bounding_square_area = None
-        self._overlapped_area_matrix = None
         
     def calculate_bounding_area(self):
         min_x_s = min([square.get_min_x() for square in self._squares])
@@ -62,3 +66,6 @@ class SquarePacking:
     
     def get_overlapped_area_matrix(self):
         return self._overlapped_area_matrix
+    
+    def calculate_sum_overlapped_area_matrix(self):
+        return self._overlapped_area_matrix.sum()
