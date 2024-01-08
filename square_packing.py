@@ -34,19 +34,26 @@ class SquarePacking:
             Polygon(square.get_coordinates_tuple())
             for square in self._squares
         ]
-        
+    
+    def get_squares(self):
+        return self._squares
+    
     def calculate_bounding_area(self):
-        min_x_s = min([square.get_min_x() for square in self._squares])
-        max_x_s = max([square.get_max_x() for square in self._squares])
-        min_y_s = min([square.get_min_y() for square in self._squares])
-        max_y_s = max([square.get_max_y() for square in self._squares])
+        self._min_x_s = min([square.get_min_x() for square in self._squares])
+        self._max_x_s = max([square.get_max_x() for square in self._squares])
+        self._min_y_s = min([square.get_min_y() for square in self._squares])
+        self._max_y_s = max([square.get_max_y() for square in self._squares])
         
-        x_delta = max_x_s - min_x_s
-        y_delta = max_y_s - min_y_s
+        x_delta = self._max_x_s - self._min_x_s
+        y_delta = self._max_y_s - self._min_y_s
         
         self._bounding_square_area = np.square(max([x_delta, y_delta]))
         return self._bounding_square_area
     
+    def get_bounding_area_coordinates(self):
+        
+        return [self._min_x_s, self._max_x_s, self._max_x_s, self._min_x_s, self._min_x_s], [self._min_y_s, self._min_y_s, self._max_y_s, self._max_y_s, self._min_y_s]
+        
     def get_bounding_area(self):
         return self._bounding_square_area
     
@@ -68,4 +75,5 @@ class SquarePacking:
         return self._overlapped_area_matrix
     
     def calculate_sum_overlapped_area_matrix(self):
+        self.calculate_overlapped_area_matrix()
         return self._overlapped_area_matrix.sum()

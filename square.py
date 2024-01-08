@@ -18,7 +18,10 @@ class Square:
     
     def get_coordinates_tuple(self):
         return tuple(map(tuple, self._coordinates))
-        
+    
+    def get_rotation(self):
+        return self._rotation
+    
     def set_rotation(self, new_rotation):
         self._rotation = new_rotation
         self.calculate_corners_coordinates()

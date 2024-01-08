@@ -34,6 +34,7 @@ class PsoOptimizer:
         
         self._n_particles:int = kwargs.get('n_particles', 100)
         self._n_dimensions:int = kwargs.get('n_dimensions')
+        self._bounds = kwargs.get('bounds', (np.zeros(self._n_dimensions), np.ones(self._n_dimensions)))
         self._n_iterations:int = kwargs.get('n_iterations', 100)
         self._objective_function:function = kwargs.get('objective_function')
         
@@ -48,7 +49,9 @@ class PsoOptimizer:
         self._optimizer = ps.single.GlobalBestPSO(
             n_particles=self._n_particles,
             dimensions=self._n_dimensions,
-            options=self._options
+            options=self._options,
+            bounds=self._bounds,
+            
         )
         
     def store_results(self, cost, position):
@@ -66,7 +69,6 @@ class PsoOptimizer:
         
     def plot_cost_history(self):
         
-        plt.figure(figsize=(25.6, 14.4))
         plot_cost_history(cost_history=self._optimizer.cost_history)
         plt.tight_layout()
         plt.show(block=False)
@@ -103,7 +105,8 @@ class PsoOptimizer:
         
         least_cost, best_position = self._optimizer.optimize(
             self._objective_function,
-            iters=self._n_iterations
+            iters=self._n_iterations,
+            n_processes=20
         )
         
         if self._store_results:
@@ -114,7 +117,7 @@ class PsoOptimizer:
             
         if self._animate_positions:
             self.animate()
-            
+                
         return least_cost, best_position
         
         

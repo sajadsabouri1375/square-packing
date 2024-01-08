@@ -1,5 +1,5 @@
 '''
-    This test scripts provides test cases to test PSO optimizer library wrapper.
+    This test scripts provides test cases to test PSO optimizer library wrapper for a simple sphere objective function.
 '''
 
 import unittest
@@ -30,6 +30,7 @@ class TestOptimizer(unittest.TestCase):
         least_cost, best_position = self._optimizer.run_optimizer()
         
         self.assertAlmostEqual(least_cost, 0.0, 3)
+        
         
 if __name__ == '__main__':
     unittest.main()
