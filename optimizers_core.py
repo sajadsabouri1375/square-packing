@@ -35,6 +35,7 @@ class OptimizerCore:
         
         self.cost_history = []
         self.pos_history = []
+        self.best_pos_history = []
     
     def custom_round_function(self, value, step):
         
@@ -63,7 +64,7 @@ class OptimizerCore:
                 self._swarm.best_pos, self._swarm.best_cost = self._topology.compute_gbest(self._swarm)
 
             # Let's print our output
-            if i%20==0:
+            if i%20==0 or i==self._n_iterations-1:
                 print('Iteration: {} | self._swarm.best_cost: {:.4f}'.format(i+1, self._swarm.best_cost))
 
             # Part 3: Update position and velocity matrices
@@ -77,6 +78,7 @@ class OptimizerCore:
             
             self.cost_history.append(self._swarm.best_cost)
             self.pos_history.append(self._swarm.position)
+            self.best_pos_history.append(self._swarm.best_pos)
             
         # Close Pool of Processes
         if self._n_processes is not None:

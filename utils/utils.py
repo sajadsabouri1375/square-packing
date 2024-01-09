@@ -4,6 +4,7 @@
 
 from abc import abstractmethod
 import os
+import math
 
 class Utils:
     
@@ -24,6 +25,15 @@ class Utils:
 
         return os.path.join(root_project_dir, address)    
     
+    @staticmethod
     def makedirs(path:str):
         
         os.makedirs(path, exist_ok=True)
+        
+    @staticmethod
+    def chunk_into_n(lst, n):
+        size = math.ceil(len(lst) / n)
+        return list(
+            map(lambda x: lst[x * size:x * size + size],
+            list(range(n)))
+        )

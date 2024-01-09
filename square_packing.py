@@ -30,11 +30,26 @@ class SquarePacking:
             for square_property in self._squares_properties
         ]
         
+        self.build_polygons()
+        
+    def build_polygons(self):
+        
         self._squares_polygons = [
             Polygon(square.get_coordinates_tuple())
             for square in self._squares
         ]
     
+    def transform_squares(self):
+        self.calculate_bounding_area()
+        x_min = self._min_x_s
+        y_min = self._min_y_s
+        
+        for square in self._squares:
+            square.transform(x_min, y_min)
+        
+        self.calculate_bounding_area()
+        self.build_polygons()
+        
     def get_squares(self):
         return self._squares
     
@@ -44,15 +59,16 @@ class SquarePacking:
         self._min_y_s = min([square.get_min_y() for square in self._squares])
         self._max_y_s = max([square.get_max_y() for square in self._squares])
         
-        x_delta = self._max_x_s - self._min_x_s
-        y_delta = self._max_y_s - self._min_y_s
+        self._x_delta = self._max_x_s - self._min_x_s
+        self._y_delta = self._max_y_s - self._min_y_s
+        self._max_length = max([self._x_delta, self._y_delta])
         
-        self._bounding_square_area = np.square(max([x_delta, y_delta]))
+        self._bounding_square_area = np.square(self._max_length)
         return self._bounding_square_area
     
     def get_bounding_area_coordinates(self):
         
-        return [self._min_x_s, self._max_x_s, self._max_x_s, self._min_x_s, self._min_x_s], [self._min_y_s, self._min_y_s, self._max_y_s, self._max_y_s, self._min_y_s]
+        return [self._min_x_s, self._min_x_s + self._max_length, self._min_x_s + self._max_length, self._min_x_s, self._min_x_s], [self._min_y_s, self._min_y_s, self._min_y_s + self._max_length, self._min_y_s + self._max_length, self._min_y_s]
         
     def get_bounding_area(self):
         return self._bounding_square_area

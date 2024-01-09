@@ -40,6 +40,11 @@ class Square:
                 self._top_left_corner
             ]
         ).reshape(-1, 2)
+    
+    def transform(self, x_shift, y_shift):
+        
+        self._coordinates[:, 0] -= x_shift
+        self._coordinates[:, 1] -= y_shift
         
     def get_corners_coordinates(self):
 

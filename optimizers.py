@@ -13,6 +13,7 @@ from pyswarms.utils.plotters import plot_cost_history, plot_contour
 from pyswarms.utils.plotters.formatters import Mesher
 from matplotlib import pyplot as plt
 from IPython.display import Image
+import pickle
 
 
 class PsoOptimizer:
@@ -63,7 +64,16 @@ class PsoOptimizer:
                 },
                 f
             )
-        
+            
+        with open(os.path.join(self._saving_directory, "optimizer_history.pickle"), 'wb') as f:
+            pickle.dump(
+                {
+                    'pos_history': self._optimizer.pos_history,
+                    'cost_history': self._optimizer.cost_history
+                },
+                f
+            )
+    
     def plot_cost_history(self):
         
         plot_cost_history(cost_history=self._optimizer.cost_history)
@@ -73,6 +83,7 @@ class PsoOptimizer:
             os.path.join(self._saving_directory, "cost_history.jpg"),
             dpi=300
         )
+        plt.close('all')
 
     def animate(self):
         
@@ -97,7 +108,7 @@ class PsoOptimizer:
             
             raise Exception('2D positions evolution animation is only available for problems with 2 dimensions.')
             exit()
-            
+     
     def report_results(self, least_cost, best_position):
         
         if self._store_results:
@@ -108,7 +119,7 @@ class PsoOptimizer:
             
         if self._animate_positions:
             self.animate()
-            
+
     def run_optimizer(self):
         
         self.define_optimizer()
