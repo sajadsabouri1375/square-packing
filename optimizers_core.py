@@ -64,7 +64,7 @@ class OptimizerCore:
                 self._swarm.best_pos, self._swarm.best_cost = self._topology.compute_gbest(self._swarm)
 
             # Let's print our output
-            if i%20==0:
+            if i%20==0 or i==self._n_iterations-1:
                 print('Iteration: {} | self._swarm.best_cost: {:.4f}'.format(i+1, self._swarm.best_cost))
 
             # Part 3: Update position and velocity matrices

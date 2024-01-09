@@ -30,11 +30,26 @@ class SquarePacking:
             for square_property in self._squares_properties
         ]
         
+        self.build_polygons()
+        
+    def build_polygons(self):
+        
         self._squares_polygons = [
             Polygon(square.get_coordinates_tuple())
             for square in self._squares
         ]
     
+    def transform_squares(self):
+        self.calculate_bounding_area()
+        x_min = self._min_x_s
+        y_min = self._min_y_s
+        
+        for square in self._squares:
+            square.transform(x_min, y_min)
+        
+        self.calculate_bounding_area()
+        self.build_polygons()
+        
     def get_squares(self):
         return self._squares
     

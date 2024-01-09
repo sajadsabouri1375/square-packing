@@ -7,10 +7,12 @@ from optimizers_core import OptimizerCore
 import numpy as np
 import imageio
 from matplotlib import pyplot as plt
+import matplotlib
 from square_packing import SquarePacking
 from utils.utils import Utils
 from matplotlib.patches import Rectangle
 import os
+matplotlib.rcParams['font.family'] = ['Ubuntu', 'serif', 'ubuntu']
 
 
 class DiscretePsoOptimizer(PsoOptimizer):
@@ -19,7 +21,7 @@ class DiscretePsoOptimizer(PsoOptimizer):
         super().__init__(**kwargs)
         
         self._features_steps = kwargs.get('features_steps')
-        self._animate_per_iteration = kwargs.get('animate_per_iteration', 10)
+        self._animate_per_iteration = kwargs.get('animate_per_iteration', 8)
         
     def define_optimizer(self):
         
@@ -34,38 +36,41 @@ class DiscretePsoOptimizer(PsoOptimizer):
             n_processes=20
         )
         
+    def get_cmap(self):
+        return plt.cm.get_cmap('tab20')
 
-    def plot_packed_squares(self, axes, squares_properties):
+    def plot_packed_squares(self, axes, squares_properties, n_squares, cmap):
         
         to_be_removed_elements = []
-        
-        n_squares = int(len(squares_properties)/3)
 
         square_packing_obj = SquarePacking(
             squares_properties=Utils.chunk_into_n(list(squares_properties), n_squares)
         )
         bounding_area = square_packing_obj.calculate_bounding_area()
         overlapped_area = square_packing_obj.calculate_sum_overlapped_area_matrix()
+        square_packing_obj.transform_squares()
         
         # Plot bounding area
         x, y = square_packing_obj.get_bounding_area_coordinates()
         element = axes.plot(
             x,
             y,
-            color='gray'
+            color='gray',
+            linewidth=10,
+            alpha=0.5
         )
         to_be_removed_elements.append(element[0])
         
         # Plot squares
-        for square in square_packing_obj.get_squares():
+        for i, square in enumerate(square_packing_obj.get_squares()):
             coordinates = square.get_corners_coordinates()
             rect = Rectangle(
                 tuple(coordinates[0, :]),
                 1, 
                 1, 
                 angle=np.rad2deg(square.get_rotation()),
-                color='crimson',
-                alpha=0.4
+                alpha=0.9,
+                facecolor=cmap(i)
             )
             element = axes.add_patch(rect)
             to_be_removed_elements.append(element)
@@ -79,20 +84,30 @@ class DiscretePsoOptimizer(PsoOptimizer):
         frames_names = []
         
         Utils.makedirs(os.path.join(self._saving_directory, 'gif'))
-        
         for i, best_position in enumerate(self._optimizer.best_pos_history): 
             
-            if i%self._animate_per_iteration == 0 or i == self._n_iterations - 1:
-                to_be_removed_elements, bounding_area, overlapped_area = self.plot_packed_squares(axes, best_position)
+            n_squares = int(len(best_position)/3)
+            cmap = self.get_cmap()
+
+            if i % self._animate_per_iteration == 0 or i == self._n_iterations - 1:
+                to_be_removed_elements, bounding_area, overlapped_area = self.plot_packed_squares(axes, best_position, n_squares, cmap)
                 
                 axes.set_aspect('equal', adjustable='box')
-                plt.title(f'Iteration {i} - Bounding Area: {round(bounding_area, 4)} - Overlapped Area: {round(overlapped_area, 4)}')
-                plt.xlim([0, self._bounds[1][0] + 2])
-                plt.ylim([0, self._bounds[1][1] + 2])
+                plt.title(f'N Squares = {n_squares} - Iteration {i}\nBounding Area: {round(bounding_area, 2)}\nOverlapped Area: {round(overlapped_area, 2)}', fontsize=25)
+                plt.xticks(fontsize=25)
+                plt.yticks(fontsize=25)
+                plt.xlim([-1, self._bounds[1][0] + 2])
+                plt.ylim([-1, self._bounds[1][1] + 2])
+                # axes.relim()
+                # axes.autoscale_view()
+                plt.xlabel('$\\alpha$', fontsize=30)
+                plt.ylabel('$\\alpha$', fontsize=30)
+                
                 figure.canvas.draw()
                 figure.canvas.flush_events()
-                figure.savefig(os.path.join(self._saving_directory, 'gif', f'frame_{i}.jpg'), dpi=100)
+                figure.savefig(os.path.join(self._saving_directory, 'gif', f'frame_{i}.jpg'), dpi=120)
                 frames_names.append(f'frame_{i}.jpg')
+                
                 for element in to_be_removed_elements:
                     element.remove()
                 
@@ -100,7 +115,7 @@ class DiscretePsoOptimizer(PsoOptimizer):
         for frame in frames_names:
             images.append(imageio.imread(os.path.join(self._saving_directory, 'gif', frame)))
             
-        imageio.mimsave(os.path.join(self._saving_directory, 'gif', 'animation.gif'), images, fps=3)
+        imageio.mimsave(os.path.join(self._saving_directory, 'gif', 'animation.gif'), images, fps=15)
             
     def run_optimizer(self):
         

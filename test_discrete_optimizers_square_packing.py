@@ -19,7 +19,7 @@ def square_packing_function(args):
             squares_properties=Utils.chunk_into_n(list(args[solution_index, :]), n_squares)
         )
         
-        obj_f = square_packing_obj.calculate_bounding_area() + 30 * square_packing_obj.calculate_sum_overlapped_area_matrix()
+        obj_f = square_packing_obj.calculate_bounding_area() + 6 * square_packing_obj.calculate_sum_overlapped_area_matrix()
         
         results.append(obj_f)
 
@@ -30,10 +30,10 @@ class TestOptimizer(unittest.TestCase):
 
     def setUp(cls):
 
-        lower_bounds = np.array([0, 0, -1 * np.pi/4])
-        upper_bounds = np.array([20, 20, np.pi/4])
-        features_steps = np.array([0.001, 0.001, np.pi/32])
-        cls._n_squares = 5
+        lower_bounds = np.array([0, 0, - np.pi / 2])
+        upper_bounds = np.array([10, 10, np.pi / 2])
+        features_steps = np.array([0.001, 0.001, np.pi/8])
+        cls._n_squares = 29
         
         cls._optimizer = DiscretePsoOptimizer(
             problem_name=f'square_packing_discrete_n_{cls._n_squares}',
@@ -44,8 +44,8 @@ class TestOptimizer(unittest.TestCase):
             n_dimensions=3*cls._n_squares,
             animate_positions=False,
             bounds=(np.tile(lower_bounds, cls._n_squares), np.tile(upper_bounds, cls._n_squares)),
-            n_particles=1000,
-            n_iterations=500,
+            n_particles=2000,
+            n_iterations=1000,
             features_steps=np.tile(features_steps, cls._n_squares)
         )
         
