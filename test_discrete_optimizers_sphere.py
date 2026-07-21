@@ -8,7 +8,7 @@ from utils.utils import Utils
 from discrete_optimizers import DiscretePsoOptimizer
 
 
-def sphere_function(args):
+def sphere_function(args, **_kwargs):
     return np.square(args).sum(axis=1)
 
 

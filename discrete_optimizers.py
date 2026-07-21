@@ -5,13 +5,15 @@
 from optimizers import PsoOptimizer
 from optimizers_core import OptimizerCore
 import numpy as np
-import imageio
+import imageio.v2 as imageio
 from matplotlib import pyplot as plt
 import matplotlib
 from square_packing import SquarePacking
 from utils.utils import Utils
 from matplotlib.patches import Rectangle
 import os
+import json
+import pickle
 matplotlib.rcParams['font.family'] = ['Ubuntu', 'serif', 'ubuntu']
 
 
@@ -22,6 +24,34 @@ class DiscretePsoOptimizer(PsoOptimizer):
         
         self._features_steps = kwargs.get('features_steps')
         self._animate_per_iteration = kwargs.get('animate_per_iteration', 8)
+
+    def store_results(self, cost, position):
+        
+        Utils.makedirs(self._saving_directory)
+        
+        optimization_steps = [
+            {
+                'iteration': iteration,
+                'best_position': list(best_position),
+                'best_cost': float(best_cost)
+            }
+            for iteration, (best_position, best_cost) in enumerate(
+                zip(self._optimizer.best_pos_history, self._optimizer.cost_history)
+            )
+        ]
+        
+        with open(os.path.join(self._saving_directory, "best_result.json"), 'w') as f:
+            json.dump(optimization_steps, f)
+            
+        with open(os.path.join(self._saving_directory, "optimizer_history.pickle"), 'wb') as f:
+            pickle.dump(
+                {
+                    'pos_history': self._optimizer.pos_history,
+                    'cost_history': self._optimizer.cost_history,
+                    'best_pos_history': self._optimizer.best_pos_history
+                },
+                f
+            )
         
     def define_optimizer(self):
         
@@ -37,7 +67,7 @@ class DiscretePsoOptimizer(PsoOptimizer):
         )
         
     def get_cmap(self):
-        return plt.cm.get_cmap('tab20')
+        return matplotlib.colormaps['tab20']
 
     def plot_packed_squares(self, axes, squares_properties, n_squares, cmap):
         
@@ -84,24 +114,24 @@ class DiscretePsoOptimizer(PsoOptimizer):
         frames_names = []
         
         Utils.makedirs(os.path.join(self._saving_directory, 'gif'))
+        cmap = self.get_cmap()
         for i, best_position in enumerate(self._optimizer.best_pos_history): 
             
             n_squares = int(len(best_position)/3)
-            cmap = self.get_cmap()
 
             if i % self._animate_per_iteration == 0 or i == self._n_iterations - 1:
                 to_be_removed_elements, bounding_area, overlapped_area = self.plot_packed_squares(axes, best_position, n_squares, cmap)
                 
                 axes.set_aspect('equal', adjustable='box')
-                plt.title(f'N Squares = {n_squares} - Iteration {i}\nBounding Area: {round(bounding_area, 2)}\nOverlapped Area: {round(overlapped_area, 2)}', fontsize=25)
+                plt.title(f'N Squares = {n_squares} - Iteration {i}\nBounding Area: {round(bounding_area, 2)}\nOverlapped Area: {round(overlapped_area, 6)}', fontsize=25)
                 plt.xticks(fontsize=25)
                 plt.yticks(fontsize=25)
                 plt.xlim([-1, self._bounds[1][0] + 2])
                 plt.ylim([-1, self._bounds[1][1] + 2])
                 # axes.relim()
                 # axes.autoscale_view()
-                plt.xlabel('$\\alpha$', fontsize=30)
-                plt.ylabel('$\\alpha$', fontsize=30)
+                plt.xlabel('α', fontsize=30)
+                plt.ylabel('α', fontsize=30)
                 
                 figure.canvas.draw()
                 figure.canvas.flush_events()
@@ -115,7 +145,7 @@ class DiscretePsoOptimizer(PsoOptimizer):
         for frame in frames_names:
             images.append(imageio.imread(os.path.join(self._saving_directory, 'gif', frame)))
             
-        imageio.mimsave(os.path.join(self._saving_directory, 'gif', 'animation.gif'), images, fps=15)
+        imageio.mimsave(os.path.join(self._saving_directory, 'gif', 'animation.gif'), images, duration=1000/15)
             
     def run_optimizer(self):
         

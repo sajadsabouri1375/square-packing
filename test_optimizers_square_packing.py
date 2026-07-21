@@ -70,7 +70,7 @@ def square_packing_function(args):
             squares_properties=chunk_into_n(list(args[solution_index, :]), n_squares)
         )
         
-        obj_f = square_packing_obj.calculate_bounding_area() + 4 * square_packing_obj.calculate_sum_overlapped_area_matrix()
+        obj_f = square_packing_obj.calculate_bounding_area() + 6 * square_packing_obj.calculate_sum_overlapped_area_matrix()
         
         results.append(obj_f)
 

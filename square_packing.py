@@ -93,3 +93,35 @@ class SquarePacking:
     def calculate_sum_overlapped_area_matrix(self):
         self.calculate_overlapped_area_matrix()
         return self._overlapped_area_matrix.sum()
+
+    @staticmethod
+    def snap_value(value, step):
+        int_part = value // step
+        remainder_part = 1 if (value % step > step / 2) else 0
+        return (int_part + remainder_part) * step
+
+    @staticmethod
+    def snap_position(position, features_steps):
+        return [
+            SquarePacking.snap_value(value, features_steps[index])
+            for index, value in enumerate(position)
+        ]
+
+    @staticmethod
+    def normalize_position(position):
+        '''
+            Each square occupies three values in order: bottom-left x, bottom-left y, rotation (radians).
+            Shift all bottom-left coordinates so the packing bounding box starts at the origin.
+        '''
+        squares_properties = [list(position[i:i + 3]) for i in range(0, len(position), 3)]
+        square_packing_obj = SquarePacking(squares_properties=squares_properties)
+        square_packing_obj.calculate_bounding_area()
+
+        x_min = square_packing_obj._min_x_s
+        y_min = square_packing_obj._min_y_s
+
+        normalized_position = []
+        for x, y, rotation in squares_properties:
+            normalized_position.extend([x - x_min, y - y_min, rotation])
+
+        return normalized_position

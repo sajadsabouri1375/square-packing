@@ -6,7 +6,8 @@ import pyswarms.backend as P
 from pyswarms.backend.topology import Star
 import numpy as np
 import multiprocessing as mp
-from pyswarms.backend.operators import compute_pbest, compute_objective_function
+from functools import partial
+from pyswarms.backend.operators import compute_pbest
 
 
 class OptimizerCore:
@@ -42,6 +43,17 @@ class OptimizerCore:
         int_part = value // step
         remainder_part = 1 if (value % step > step/2) else 0
         return (int_part + remainder_part) * step 
+
+    def _evaluate_objective(self, positions, pool=None):
+        
+        if pool is None:
+            return self._objective_function(positions)
+
+        results = pool.map(
+            partial(self._objective_function),
+            np.array_split(positions, pool._processes),
+        )
+        return np.concatenate(results)
                 
     def optimize(self):
         
@@ -50,16 +62,13 @@ class OptimizerCore:
         for i in range(self._n_iterations):
             
             # Part 1: Update personal best
-            self._swarm.current_cost = compute_objective_function(self._swarm, self._objective_function, pool) # Compute current cost
-            # self._swarm.pbest_cost = self._objective_function(self._swarm.pbest_pos)  # Compute personal best pos
-            
+            self._swarm.current_cost = self._evaluate_objective(self._swarm.position, pool)
+
             if i == 0:
                 self._swarm.pbest_cost = self._swarm.current_cost
                 
-            self._swarm.pbest_pos, self._swarm.pbest_cost = P.compute_pbest(self._swarm) # Update and store
+            self._swarm.pbest_pos, self._swarm.pbest_cost = P.compute_pbest(self._swarm)
 
-            # Part 2: Update global best
-            # Note that gbest computation is dependent on your topology
             if np.min(self._swarm.pbest_cost) < self._swarm.best_cost:
                 self._swarm.best_pos, self._swarm.best_cost = self._topology.compute_gbest(self._swarm)
 
