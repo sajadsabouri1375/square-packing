@@ -39,6 +39,7 @@ class DiscretePsoOptimizer(PsoOptimizer):
                 zip(self._optimizer.best_pos_history, self._optimizer.cost_history)
             )
         ]
+        optimization_steps = self.trim_optimization_steps(optimization_steps)
         
         with open(os.path.join(self._saving_directory, "best_result.json"), 'w') as f:
             json.dump(optimization_steps, f)
@@ -107,6 +108,35 @@ class DiscretePsoOptimizer(PsoOptimizer):
             
         return to_be_removed_elements, bounding_area, overlapped_area
 
+    def _normalize_position(self, position):
+        normalized_position = SquarePacking.normalize_position(position)
+        return SquarePacking.snap_position(normalized_position, self._features_steps)
+
+    def _normalize_best_pos_history(self):
+        self._optimizer.best_pos_history = [
+            self._normalize_position(position)
+            for position in self._optimizer.best_pos_history
+        ]
+
+    @staticmethod
+    def trim_optimization_steps(optimization_steps):
+        if not optimization_steps:
+            return optimization_steps
+
+        last_change_index = 0
+        for index in range(1, len(optimization_steps)):
+            if optimization_steps[index]['best_cost'] != optimization_steps[index - 1]['best_cost']:
+                last_change_index = index
+
+        trimmed_steps = optimization_steps[:last_change_index + 2]
+
+        deduped_steps = [trimmed_steps[0]]
+        for step in trimmed_steps[1:]:
+            if step['best_cost'] != deduped_steps[-1]['best_cost']:
+                deduped_steps.append(step)
+
+        return deduped_steps
+
     def animate_square_pack(self):
     
         figure = plt.figure(figsize=(25.6, 14.4))
@@ -152,6 +182,8 @@ class DiscretePsoOptimizer(PsoOptimizer):
         self.define_optimizer()
         
         least_cost, best_position = self._optimizer.optimize()
+        self._normalize_best_pos_history()
+        best_position = self._normalize_position(best_position)
                 
         self.report_results(least_cost, best_position)
                 
